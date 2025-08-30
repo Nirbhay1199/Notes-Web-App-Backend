@@ -4,11 +4,21 @@ const { Note } = require('../config/database');
 class NotesController {
   static async getAllNotes(req, res) {
     try {
-      const userNotes = await Note.find({ userId: req.session.userId })
+      const { userId } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId query parameter is required' });
+      }
+
+      const userNotes = await Note.find({ userId: userId })
         .sort({ updatedAt: -1 })
         .lean();
 
-      res.json({ notes: userNotes });
+      res.json({ 
+        notes: userNotes,
+        userId: userId,
+        count: userNotes.length
+      });
     } catch (error) {
       console.error('Get notes error:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -22,12 +32,16 @@ class NotesController {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { title, content } = req.body;
+      const { title, content, userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required in request body' });
+      }
 
       const newNote = new Note({
         title,
         content,
-        userId: req.session.userId
+        userId: userId
       });
 
       await newNote.save();
@@ -50,15 +64,19 @@ class NotesController {
       }
 
       const { id } = req.params;
-      const { title, content } = req.body;
+      const { title, content, userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required in request body' });
+      }
 
       const note = await Note.findById(id);
       if (!note) {
         return res.status(404).json({ error: 'Note not found' });
       }
 
-      if (note.userId.toString() !== req.session.userId.toString()) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (note.userId.toString() !== userId) {
+        return res.status(403).json({ error: 'Access denied - note does not belong to this user' });
       }
 
       note.title = title;
@@ -80,14 +98,19 @@ class NotesController {
   static async deleteNote(req, res) {
     try {
       const { id } = req.params;
+      const { userId } = req.query;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'userId query parameter is required' });
+      }
 
       const note = await Note.findById(id);
       if (!note) {
         return res.status(404).json({ error: 'Note not found' });
       }
 
-      if (note.userId.toString() !== req.session.userId.toString()) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (note.userId.toString() !== userId) {
+        return res.status(403).json({ error: 'Access denied - note does not belong to this user' });
       }
 
       await Note.findByIdAndDelete(id);

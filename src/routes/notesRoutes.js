@@ -1,12 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const NotesController = require('../controllers/notesController');
-const { requireAuth } = require('../middleware/auth');
 const { validateNote } = require('../middleware/validation');
 
-// Notes routes (all require authentication)
-router.use(requireAuth);
-
+// All notes routes now use userId parameter instead of session authentication
 router.get('/', NotesController.getAllNotes);
 router.post('/', validateNote, NotesController.createNote);
 router.put('/:id', validateNote, NotesController.updateNote);
