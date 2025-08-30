@@ -16,11 +16,23 @@ const userSchema = new mongoose.Schema({
   },
   dob: {
     type: Date,
-    required: true
+    required: function() {
+      // Only required if not a Google user
+      return !this.googleId;
+    }
   },
   verified: {
     type: Boolean,
     default: false
+  },
+  googleId: {
+    type: String,
+    sparse: true, // Allows multiple null values but unique non-null values
+    index: true
+  },
+  profilePicture: {
+    type: String,
+    trim: true
   },
   createdAt: {
     type: Date,
