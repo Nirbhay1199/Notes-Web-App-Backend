@@ -98,7 +98,8 @@ class AuthController {
         res.json({
           message: 'OTP sent successfully',
           email: user.email,
-          otp: otpResult.otp,           // Include OTP in response
+          userId: user._id,             // Include userId in response
+          otp: otpResult.otp,          // Include OTP in response
           expiresAt: otpResult.expiresAt // Include expiration time
         });
       } else {
