@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator');
 const { User } = require('../config/database');
-const AuthSignalService = require('../services/authSignalService');
+const MockOTPService = require('../services/authSignalService');
 
 class AuthController {
   static async signup(req, res) {
@@ -28,7 +28,7 @@ class AuthController {
       await user.save();
 
       // Send OTP for verification
-      const otpResult = await AuthSignalService.sendOTP(email);
+      const otpResult = await MockOTPService.sendOTP(email);
       
       res.status(201).json({
         message: 'User registered successfully. Please verify your email with OTP.',
@@ -54,7 +54,7 @@ class AuthController {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      const verificationResult = await AuthSignalService.verifyOTP(email, otp);
+      const verificationResult = await MockOTPService.verifyOTP(email, otp);
       
       if (verificationResult.success) {
         // Mark user as verified
@@ -90,7 +90,7 @@ class AuthController {
       }
 
       // Send OTP for signin
-      const otpResult = await AuthSignalService.sendOTP(email);
+      const otpResult = await MockOTPService.sendOTP(email);
       
       if (otpResult.success) {
         res.json({
@@ -123,7 +123,7 @@ class AuthController {
         return res.status(401).json({ error: 'Please verify your email first' });
       }
 
-      const verificationResult = await AuthSignalService.verifyOTP(email, otp);
+      const verificationResult = await MockOTPService.verifyOTP(email, otp);
       
       if (verificationResult.success) {
         // Create session
