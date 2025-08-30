@@ -3,10 +3,8 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const session = require('express-session');
 
 // Import configurations
-const sessionConfig = require('./config/session');
 const corsConfig = require('./config/cors');
 const rateLimitConfig = require('./config/rateLimit');
 const { connectDB } = require('./config/database');
@@ -28,9 +26,6 @@ app.use(cors(corsConfig));
 
 // Rate limiting
 app.use('/api/', rateLimit(rateLimitConfig));
-
-// Session configuration
-app.use(session(sessionConfig));
 
 // Body parsing middleware
 app.use(express.json());

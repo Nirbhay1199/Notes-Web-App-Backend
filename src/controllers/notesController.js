@@ -4,11 +4,8 @@ const { Note } = require('../config/database');
 class NotesController {
   static async getAllNotes(req, res) {
     try {
-      const { userId } = req.query;
-      
-      if (!userId) {
-        return res.status(400).json({ error: 'userId query parameter is required' });
-      }
+      // Get userId from JWT middleware
+      const userId = req.user.userId;
 
       const userNotes = await Note.find({ userId: userId })
         .sort({ updatedAt: -1 })
@@ -33,11 +30,8 @@ class NotesController {
       }
 
       const { title, content } = req.body;
-      const { userId } = req.query;
-      
-      if (!userId) {
-        return res.status(400).json({ error: 'userId query parameter is required' });
-      }
+      // Get userId from JWT middleware
+      const userId = req.user.userId;
 
       const newNote = new Note({
         title,
@@ -66,11 +60,8 @@ class NotesController {
 
       const { id } = req.params;
       const { title, content } = req.body;
-      const { userId } = req.query;
-      
-      if (!userId) {
-        return res.status(400).json({ error: 'userId query parameter is required' });
-      }
+      // Get userId from JWT middleware
+      const userId = req.user.userId;
 
       const note = await Note.findById(id);
       if (!note) {
@@ -100,11 +91,8 @@ class NotesController {
   static async deleteNote(req, res) {
     try {
       const { id } = req.params;
-      const { userId } = req.query;
-      
-      if (!userId) {
-        return res.status(400).json({ error: 'userId query parameter is required' });
-      }
+      // Get userId from JWT middleware
+      const userId = req.user.userId;
 
       const note = await Note.findById(id);
       if (!note) {

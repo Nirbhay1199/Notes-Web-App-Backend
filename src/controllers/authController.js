@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const { User } = require('../config/database');
 const MockOTPService = require('../services/authSignalService');
+const { generateToken } = require('../config/jwt');
 
 class AuthController {
   static async signup(req, res) {
@@ -131,13 +132,16 @@ class AuthController {
       const verificationResult = await MockOTPService.verifyOTP(email, otp);
       
       if (verificationResult.success) {
-        // Create session
-        req.session.userId = user._id;
-        req.session.userEmail = user.email;
+        // Generate JWT token
+        const token = generateToken({
+          userId: user._id,
+          email: user.email
+        });
 
         res.json({
           message: 'Sign in successful',
-          user: user.toPublicJSON()
+          user: user.toPublicJSON(),
+          token: token
         });
       } else {
         res.status(400).json({ error: verificationResult.message });
@@ -149,17 +153,15 @@ class AuthController {
   }
 
   static async logout(req, res) {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: 'Could not log out' });
-      }
-      res.json({ message: 'Logged out successfully' });
-    });
+    // With JWT, logout is handled client-side by removing the token
+    // Server-side, we could implement a blacklist if needed
+    res.json({ message: 'Logged out successfully' });
   }
 
   static async getCurrentUser(req, res) {
     try {
-      const user = await User.findById(req.session.userId);
+      // User info is now available from JWT middleware
+      const user = await User.findById(req.user.userId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
