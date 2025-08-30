@@ -33,7 +33,9 @@ class AuthController {
       res.status(201).json({
         message: 'User registered successfully. Please verify your email with OTP.',
         userId: user._id,
-        otpSent: otpResult.success
+        otpSent: otpResult.success,
+        otp: otpResult.otp,           // Include OTP in response
+        expiresAt: otpResult.expiresAt // Include expiration time
       });
     } catch (error) {
       console.error('Signup error:', error);
@@ -94,8 +96,10 @@ class AuthController {
       
       if (otpResult.success) {
         res.json({
-          message: 'OTP sent to your email. Please verify to sign in.',
-          email: user.email
+          message: 'OTP sent successfully',
+          email: user.email,
+          otp: otpResult.otp,           // Include OTP in response
+          expiresAt: otpResult.expiresAt // Include expiration time
         });
       } else {
         res.status(500).json({ error: 'Failed to send OTP' });
