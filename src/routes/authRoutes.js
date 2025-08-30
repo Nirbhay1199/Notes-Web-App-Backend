@@ -7,6 +7,7 @@ const { validateSignup, validateSignin } = require('../middleware/validation');
 router.post('/signup', validateSignup, AuthController.signup);
 router.post('/verify-otp', AuthController.verifyOTP);
 router.post('/signin', validateSignin, AuthController.signin);
+router.post('/verify-signin-otp', AuthController.verifySigninOTP);
 router.post('/logout', AuthController.logout);
 router.get('/me', AuthController.getCurrentUser);
 

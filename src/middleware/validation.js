@@ -2,13 +2,12 @@ const { body } = require('express-validator');
 
 const validateSignup = [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('name').trim().isLength({ min: 2 })
+  body('name').trim().isLength({ min: 2 }),
+  body('dob').isISO8601().toDate()
 ];
 
 const validateSignin = [
-  body('email').isEmail().normalizeEmail(),
-  body('password').notEmpty()
+  body('email').isEmail().normalizeEmail()
 ];
 
 const validateNote = [

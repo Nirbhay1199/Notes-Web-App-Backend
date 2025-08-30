@@ -21,6 +21,10 @@ const otpSchema = new mongoose.Schema({
     default: 0,
     max: 3
   },
+  authSignalToken: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

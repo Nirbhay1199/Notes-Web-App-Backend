@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const { User } = require('../config/database');
 const AuthSignalService = require('../services/authSignalService');
@@ -11,7 +10,7 @@ class AuthController {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { email, password, name } = req.body;
+      const { email, name, dob } = req.body;
 
       // Check if user already exists
       const existingUser = await User.findOne({ email });
@@ -19,11 +18,11 @@ class AuthController {
         return res.status(400).json({ error: 'User already exists' });
       }
 
-      // Create user (password will be hashed automatically by the model)
+      // Create user
       const user = new User({
         email,
-        password,
-        name
+        name,
+        dob
       });
 
       await user.save();
@@ -79,32 +78,67 @@ class AuthController {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { email, password } = req.body;
+      const { email } = req.body;
 
       const user = await User.findOne({ email });
       if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: 'User not found. Please sign up first.' });
       }
 
       if (!user.verified) {
         return res.status(401).json({ error: 'Please verify your email first' });
       }
 
-      const isValidPassword = await user.comparePassword(password);
-      if (!isValidPassword) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+      // Send OTP for signin
+      const otpResult = await AuthSignalService.sendOTP(email);
+      
+      if (otpResult.success) {
+        res.json({
+          message: 'OTP sent to your email. Please verify to sign in.',
+          email: user.email
+        });
+      } else {
+        res.status(500).json({ error: 'Failed to send OTP' });
       }
-
-      // Create session
-      req.session.userId = user._id;
-      req.session.userEmail = user.email;
-
-      res.json({
-        message: 'Login successful',
-        user: user.toPublicJSON()
-      });
     } catch (error) {
       console.error('Signin error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  static async verifySigninOTP(req, res) {
+    try {
+      const { email, otp } = req.body;
+      
+      if (!email || !otp) {
+        return res.status(400).json({ error: 'Email and OTP are required' });
+      }
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (!user.verified) {
+        return res.status(401).json({ error: 'Please verify your email first' });
+      }
+
+      const verificationResult = await AuthSignalService.verifyOTP(email, otp);
+      
+      if (verificationResult.success) {
+        // Create session
+        req.session.userId = user._id;
+        req.session.userEmail = user.email;
+
+        res.json({
+          message: 'Sign in successful',
+          user: user.toPublicJSON()
+        });
+      } else {
+        res.status(400).json({ error: verificationResult.message });
+      }
+    } catch (error) {
+      console.error('Signin OTP verification error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }
