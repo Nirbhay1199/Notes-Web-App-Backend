@@ -32,10 +32,11 @@ class NotesController {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { title, content, userId } = req.body;
+      const { title, content } = req.body;
+      const { userId } = req.query;
       
       if (!userId) {
-        return res.status(400).json({ error: 'userId is required in request body' });
+        return res.status(400).json({ error: 'userId query parameter is required' });
       }
 
       const newNote = new Note({
@@ -64,10 +65,11 @@ class NotesController {
       }
 
       const { id } = req.params;
-      const { title, content, userId } = req.body;
+      const { title, content } = req.body;
+      const { userId } = req.query;
       
       if (!userId) {
-        return res.status(400).json({ error: 'userId is required in request body' });
+        return res.status(400).json({ error: 'userId query parameter is required' });
       }
 
       const note = await Note.findById(id);
