@@ -1,7 +1,4 @@
 /.env
 /node_modules
 /Notes-App-API.postman_collection.json
-/README.md
 /test-api.js
-AUTHSIGNAL_SETUP.md
-JWT_IMPLEMENTATION.md
